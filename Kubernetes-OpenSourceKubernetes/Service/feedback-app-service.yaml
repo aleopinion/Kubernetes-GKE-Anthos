@@ -1,0 +1,16 @@
+# Deploying NginX Application "Service"
+apiVersion: v1
+kind:   Service
+metadata: 
+  name: feedback-app-nodeport-service
+  labels: 
+    app: feedback-app-service     
+spec:
+  type: NodePort
+  selector:
+    app: feedbackapp    # The same name you gave to your label in Pod deployment => matching labels => 03:14:12
+  ports:
+    - name: http
+      port: 80          # internal port for the application or container that you want to match with the external port
+      targetPort: 8080  # external port of host vm which has been exposed via the firewall rule. You can declare multiple ports.
+      nodePort: 31234   # this is something that is required and you can provide any port so long as that port is available => 03:22:07

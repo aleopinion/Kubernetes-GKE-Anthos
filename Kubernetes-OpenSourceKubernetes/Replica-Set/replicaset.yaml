@@ -1,0 +1,49 @@
+# Sample "ReplicaSet" Deployment Code in K8S which will be updated"
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: frontend
+  labels:
+    app: guestbook
+    tier: frontend
+spec:
+  # modify replicas according to your case
+  replicas: 3
+  selector:
+    matchLabels:
+      tier: frontend
+  template:
+    metadata:
+      labels:
+        tier: frontend
+    spec:
+      containers:
+      - name: php-redis
+        image: gcr.io/google_samples/gb-frontend:v3
+
+
+# Deploying feedback Application "Replica-Set"
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata:
+  name: feedback-app
+  labels:
+    app: feedback-app
+    tier: Production
+spec:
+  # modify replicas according to your case
+  replicas: 5
+  selector:
+    matchLabels:
+      type: app # Used by replica set to know from the pool of pods which one it needs to manage
+  template:
+    metadata:
+      labels:
+        type: app    # This label gets appended to the pods once they get created using the replica set
+        tier: Production
+    spec:
+      containers:
+      - name: feedback-app
+        image: aleopinion/feedback-node:v2
+        ports:
+          - containerPort: 80

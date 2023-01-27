@@ -1,0 +1,46 @@
+# Sample "Pod" Deployment Code in K8S which will be updated"
+apiVersion:  # String
+kind:   # String
+metadata: # Dictionary
+  name: 
+  labels:  # Dictionary 
+    app:        
+spec:
+#===============================================
+
+# Deploying Feedback Application "Pod"
+apiVersion: v1
+kind:   Pod
+metadata: 
+  name: feedback-app
+  labels: 
+    app: feedbackapp     
+spec:    
+  containers:
+    - name: feedback-app
+      image: aleopinion/feedback-node:v2
+      ports:
+        - containerPort: 80
+
+#===========================================
+
+# Deploying NginX Application
+apiVersion: v1
+kind:   Pod
+metadata: 
+  name: nginx-app
+  labels: 
+    app: nginxapp     
+spec:
+  containers:
+    - name: nginx-app
+      image: nginx:latest
+      ports:
+        - containerPort: 80
+
+
+
+
+
+
+

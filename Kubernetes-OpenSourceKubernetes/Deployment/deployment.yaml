@@ -1,0 +1,24 @@
+# Deploying feedback Application "Deployment"
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: feedback-app-v1
+  labels:
+    app: feedback-app
+    tier: Production
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      type: app # Used by replica set to know from the pool of pods which one it needs to manage
+  template:
+    metadata:
+      labels:
+        type: app    # This label gets appended to the pods once they get created using the replica set
+        tier: Production
+    spec:
+      containers:
+      - name: feedback-app
+        image: aleopinion/feedback-node:v2
+        ports:
+        - containerPort: 80
