@@ -147,9 +147,11 @@ migctl migration create my-migration --source source-vm   --vm-id source-vm --ty
 ```
 migctl migration status my-migration 
 ```
+```
 output:  This is what you'll see after you run the above command
 Name 	       TYPE                 	CURRENT-OPERATION	    PROGRESS	STEP	    STATUS		AGE
 my-migration linux-system-container GenerateMigrationPlan [3/3]	    Discovery	Running	 	59s
+```
 
 ### 17 = To get or view the Migration plan that we created/generated
 ```
