@@ -2,6 +2,12 @@
 
 https://github.com/GoogleCloudPlatform/acm-essentials
 
+
+### To check and make sure the project matches with the project you are working on
+```
+gcloud config list
+```
+
 ### 1 = To set an environment variable for Dev environment
 ```
 export PROJECT_ID=$DEVSHELL_PROJECT_ID
