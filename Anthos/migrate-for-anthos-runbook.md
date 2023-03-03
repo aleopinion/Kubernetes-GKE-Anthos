@@ -153,7 +153,7 @@ Name 	       TYPE                 	CURRENT-OPERATION	    PROGRESS	STEP	    STATU
 my-migration linux-system-container GenerateMigrationPlan [3/3]	    Discovery	Running	 	59s
 ```
 
-### 17 = To get or view the Migration plan that we created/generated
+### 17 = To view or get the Migration plan that we created/generated in yaml format 
 ```
 migctl migration get my-migration
 ```
@@ -179,9 +179,11 @@ migctl migration generate-artifacts my-migration
 ```
 migctl migration status my-migration 
 ```
+```
 output: This is what you'll see after you run the above command
 Name 	        TYPE	                  CURRENT-OPERATION	PROGRESS  STEP	              STATUS		   AGE
 my-migration  linux-system-container  GenerateArtifacts [1/1]	    GenerateArtifacts	  Completed    59s
+```
 
 ### 20 = If you want to gain more output about the status => Verbosity
 ```
