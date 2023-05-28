@@ -18,13 +18,45 @@ export PROJECT_ID=$DEVSHELL_PROJECT_ID
 gcloud compute  instances create   source-prod-vm  --zone=us-central1-a --machine-type=e2-standard-2   --subnet=default --scopes="cloud-platform"   --tags=http-server,https-server --image=ubuntu-minimal-1604-xenial-v20210119a   --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard   --boot-disk-device-name=source-vm \
 --metadata startup-script=METADATA_SCRIPT
 ```
-### 2b = Creating Source VM - where the application that we are migrating reside => Using update from Chat GPT for the application
+### 2b = Creating Source VM - where the application that we are migrating reside
 ```
-gcloud compute  instances create   source-prod-vm  --zone=us-central1-a --machine-type=e2-standard-2   --subnet=default --scopes="cloud-platform"   --tags=http-server,https-server --image=ubuntu-minimal-1604-xenial-v20210119a   --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard   --boot-disk-device-name=source-vm \
-  --metadata startup-script='#! /bin/bash
-    echo "Hello, World!" > /var/www/html/index.html'
+gcloud compute  instances create   source-prod-vm  \
+--zone=us-central1-a \
+--machine-type=e2-standard-2   \
+--subnet=default \
+--scopes="cloud-platform"   \
+--tags=http-server,https-server \
+--image=ubuntu-minimal-1604-xenial-v20210119a   \
+--image-project=ubuntu-os-cloud \
+--boot-disk-size=10GB \
+--boot-disk-type=pd-standard   \
+--boot-disk-device-name=source-vm \
+--metadata startup-script=METADATA_SCRIPT
+
 ```
 
+### 2c = Creating Source VM - where the application that we are migrating reside => Using update from Google Bard for the application
+```
+gcloud compute  instances create   source-prod-vm  \
+--zone=us-central1-a \
+--machine-type=e2-standard-2   \
+--subnet=default \
+--scopes="cloud-platform"   \
+--tags=http-server,https-server \
+--image=ubuntu-minimal-1604-xenial-v20210119a   \
+--image-project=ubuntu-os-cloud \
+--boot-disk-size=10GB \
+--boot-disk-type=pd-standard   \
+--boot-disk-device-name=source-vm \
+--metadata startup-script="echo '
+#!/bin/bash
+
+sudo apt-get update && sudo apt-get install -y docker
+
+docker run -d -p 8080:80 hello-world
+' > /tmp/startup.sh && sudo bash /tmp/startup.sh"
+
+```
 ### The different commands that you can use to manage containers at the cluster level
 ```
 gcloud containers cluster list
