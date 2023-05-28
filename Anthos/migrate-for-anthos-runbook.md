@@ -13,10 +13,21 @@ gcloud config list
 export PROJECT_ID=$DEVSHELL_PROJECT_ID
 ```
 
-### 2 = Creating Source Vm
+### 2a = Creating Source VM - where the application that we are migrating reside
 ```
-gcloud compute  instances create   source-vm  --zone=us-central1-a --machine-type=e2-standard-2   --subnet=default --scopes="cloud-platform"   --tags=http-server,https-server --image=ubuntu-minimal-1604-xenial-v20210119a   --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard   --boot-disk-device-name=source-vm \
-  --metadata startup-script=METADATA_SCRIPT
+gcloud compute  instances create   source-prod-vm  --zone=us-central1-a --machine-type=e2-standard-2   --subnet=default --scopes="cloud-platform"   --tags=http-server,https-server --image=ubuntu-minimal-1604-xenial-v20210119a   --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard   --boot-disk-device-name=source-vm \
+--metadata startup-script=METADATA_SCRIPT
+```
+### 2b = Creating Source VM - where the application that we are migrating reside => Using update from Chat GPT for the application
+```
+gcloud compute  instances create   source-prod-vm  --zone=us-central1-a --machine-type=e2-standard-2   --subnet=default --scopes="cloud-platform"   --tags=http-server,https-server --image=ubuntu-minimal-1604-xenial-v20210119a   --image-project=ubuntu-os-cloud --boot-disk-size=10GB --boot-disk-type=pd-standard   --boot-disk-device-name=source-vm \
+  --metadata startup-script='#! /bin/bash
+    echo "Hello, World!" > /var/www/html/index.html'
+```
+
+### The different commands that you can use to manage containers at the cluster level
+```
+gcloud containers cluster list
 ```
 
 ### 3 = Creating Firewall Rule for the vm just created
@@ -38,6 +49,12 @@ gcloud iam service-accounts create m4a-install \
 ### 6 = Assigning Administrator Role for Cloud Storage
 ```
 gcloud projects add-iam-policy-binding $PROJECT_ID  \
+  --member=serviceAccount:m4a-install@$PROJECT_ID.iam.gserviceaccount.com \
+  --role=roles/owner
+```
+
+```
+gcloud projects add-iam-policy-binding $PROJECT_ID  \
   --member="serviceAccount:m4a-install@$PROJECT_ID.iam.gserviceaccount.com" \
   --role="roles/storage.admin"
 ```
@@ -48,14 +65,18 @@ gcloud iam service-accounts keys create m4a-install.json \
   --iam-account=m4a-install@$PROJECT_ID.iam.gserviceaccount.com \
   --project=$PROJECT_ID
 ```
+
+### => To list the keys that have been created
 ```
-ls  => To list the keys that have been created
+ls  
 ```
+
+### => To see the content ot the key
 ```
-cat m4a-install.json => To see the content ot the key
+cat m4a-install.json 
 ```
  
-### 8 = To log in to the Migration Processing Cluster
+### 8 = To log into the Migration Processing Cluster
 ```
 gcloud container clusters get-credentials migration-processing   --zone us-central1-a
 ```
@@ -65,14 +86,27 @@ gcloud container clusters get-credentials migration-processing   --zone us-centr
 kubectl get nodes
 ```
 
-### 9 = Setting up Actual Utilities or Componnents for Migrate for Anthos
+### 9 = Setting up Actual Utilities or Componnents for Migrate for Anthos (migctl)
 ```
 migctl setup install --json-key=m4a-install.json --gcp-project $PROJECT_ID --gcp-region region us-central1
 ```
 
-### Confirming you have the right configurations 
+### The Command to Uninstall migctl from the processing cluster
+```
+gcloud container hub migctl uninstall --project=[PROJECT_ID] --location=[LOCATION]
+```
+```
+migctl uninstall --project=$PROJECT_ID --location=us-central1
+```
+
+### To Confirm/validate/verify the installation of all the utilities for migrate For Anthos - To confirm you have the right configurations 
 ```
 migctl doctor
+```
+
+### To check the different clusters in your project 
+```
+gcloud container clusters list
 ```
 
 ### 10 = To create the 2nd Service Account
@@ -119,58 +153,72 @@ gcloud iam service-accounts keys create m4a-ce-src.json \
   --iam-account=m4a-ce-src@$PROJECT_ID.iam.gserviceaccount.com \
   --project=$PROJECT_ID
 ```
+
+### => To display the keys just created
 ```
-ls => To display the keys just created
+ls 
 ```
 
 ### 14 = Creating the Actual Migration Source
 ```
-migctl source create ce source-vm --project $PROJECT_ID --json-key=m4a-ce-src.json
+migctl source create ce anthos-source-vm --project $PROJECT_ID --json-key=m4a-ce-src.json
 ``` 
 =>Error<=
+
+### => To check if you have a proper setup within your Processing Cluster
 ```
-migctl doctor => To check if you have a proper setup within your Processing Cluster
+migctl doctor 
 ```
+
+### => To get the number of pods running within the system namespace
 ```
-kubectl get pods -n kube-system => To get the number of pods running within the system namespace
+kubectl get pods -n kube-system 
 ```
+
+### => To get the namespaces
 ```
-kubectl get ns => To get the namespaces
+kubectl get ns 
 ```
 
 ### 15 = Activating Migration Plan using Migctl Utilities
 ```
-migctl migration create my-migration --source source-vm   --vm-id source-vm --type linux-system-container		
+migctl migration create my-migration --source source-prod-vm   --vm-id source-prod-vm --type linux-system-container		
 ```
 
 ### 16 = To Test the Migration Status
 ```
 migctl migration status my-migration 
 ```
-```
-output:  This is what you'll see after you run the above command
-Name 	       TYPE                 	CURRENT-OPERATION	    PROGRESS	STEP	    STATUS		AGE
-my-migration linux-system-container GenerateMigrationPlan [3/3]	    Discovery	Running	 	59s
-```
+   output:  This is what you'll see after you run the above command
+   Name 	       TYPE                 	 CURRENT-OPERATION	    PROGRESS	STEP	     STATUS		  AGE
+   my-migration  linux-system-container  GenerateMigrationPlan  [3/3]	    Discovery	 Running	 	59s
 
-### 17 = To view or get the Migration plan that we created/generated in yaml format 
+### 17 = To get or view the Migration plan that we created/generated in yaml format
 ```
 migctl migration get my-migration
 ```
+
+### => To view the 2 files generated from the migration plan => my-migration.data.yaml and my-migration.yaml
 ```
-ls => To view the migration plan => 2 files generated = my-migration.data.yaml and my-migration.yaml
-```
-```
-cat my-migration.data.yaml => The copy of the migration plan that you can play with
-```
-```
-cat my-migration.yaml => Final Copy of the migration plan
-```
-```
-migctl migration plan my-migration => Shows you some of the different migctl commands that you can run 
+ls 
 ```
 
-### 18 = Used to generate actual Deployment Artifacts
+### => The copy of the migration plan that you can play with
+```
+cat my-migration.data.yaml 
+```
+
+### => Final Copy of the migration plan
+```
+cat my-migration.yaml 
+```
+
+### => Shows you some of the different migctl commands that you can run
+```
+migctl migration plan my-migration  
+```
+
+### 18 = Used to generate actual Deployment Artifacts from the Migration plan
 ```
 migctl migration generate-artifacts my-migration
 ```
@@ -179,11 +227,9 @@ migctl migration generate-artifacts my-migration
 ```
 migctl migration status my-migration 
 ```
-```
 output: This is what you'll see after you run the above command
 Name 	        TYPE	                  CURRENT-OPERATION	PROGRESS  STEP	              STATUS		   AGE
 my-migration  linux-system-container  GenerateArtifacts [1/1]	    GenerateArtifacts	  Completed    59s
-```
 
 ### 20 = If you want to gain more output about the status => Verbosity
 ```
@@ -230,18 +276,24 @@ cat http-m4a-service.yaml
   
 ### 22 = This command targets the service manifest and executes the 2 services within the manifest
 ```
-kubectl apply -f http-m4e-servive.yaml  or  kubectl create -f http-m4a-service.yaml
+kubectl apply -f http-m4e-servive.yaml   
+```
+```
+kubectl create -f http-m4a-service.yaml
 ```
 
 ###
-Copy External IP paste on Browser  => Run it
+Copy External IP paste on Browser 
 
 ###
 ```
 kubectl get svc
 ```
+```
+kubectl get services
+```
 
-###
+### To show the registry that we are intarracting with 
 ```
 migctl docker-registry list
 ````
