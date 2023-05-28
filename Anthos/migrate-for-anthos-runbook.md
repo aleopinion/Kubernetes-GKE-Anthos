@@ -191,9 +191,9 @@ gcloud iam service-accounts keys create m4a-ce-src.json \
 ls 
 ```
 
-### 14 = Creating the Actual Migration Source
+### 14 = To Configure the Source
 ```
-migctl source create ce anthos-source-vm --project $PROJECT_ID --json-key=m4a-ce-src.json
+migctl source create ce source-anthos-vm --project $PROJECT_ID --json-key=m4a-ce-src.json
 ``` 
 =>Error<=
 
